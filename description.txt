@@ -1,0 +1,31 @@
+
+Fine-Tuning BERT for Baby Care Question Classification
+
+Dans ce projet, nous avons développé un système de classification binaire basé sur le modèle BERT afin de détecter si une question posée par un utilisateur
+est liée aux soins des bébés. Pour cela, nous avons combiné deux jeux de données. Le premier, construit à partir de notre propre dataset, contient des questions
+ et descriptions concernant les soins des bébés. Nous avons fusionné les colonnes question et description dans une nouvelle colonne text, et attribué une étiquette 
+label = 1 à chaque entrée. Le second jeu de données provient du News Category Dataset, un dataset public disponible sur Kaggle, qui contient plus de 200 000 articles
+ de presse répartis sur 41 catégories thématiques telles que : 'U.S. NEWS', 'COMEDY', 'PARENTING', 'WORLD NEWS', 'CULTURE & ARTS', 'TECH', 'SPORTS', 'ENTERTAINMENT', 
+'POLITICS', 'WEIRD NEWS', 'ENVIRONMENT', 'EDUCATION', 'CRIME', 'SCIENCE', 'WELLNESS', 'BUSINESS', 'STYLE & BEAUTY', 'FOOD & DRINK', 'MEDIA', 'QUEER VOICES', 'HOME & 
+LIVING', 'WOMEN', 'BLACK VOICES', 'TRAVEL', 'MONEY', 'RELIGION', 'LATINO VOICES', 'IMPACT', 'WEDDINGS', 'COLLEGE', 'PARENTS', 'ARTS & CULTURE', 'STYLE', 'GREEN'... 
+ Ce dataset couvre un large éventail de sujets sans lien avec les soins aux bébés, ce qui en fait une excellente source de données négatives. Nous avons combiné les 
+colonnes headline et short_description pour créer une colonne text, et attribué une étiquette label = 0. L’objectif de cette démarche est de permettre au modèle 
+d’apprendre à distinguer les questions spécifiques aux soins des bébés de toute autre information générale ou actualité non pertinente. En combinant ces deux jeux
+ de données, nous avons constitué un ensemble équilibré et représentatif, idéal pour l’entraînement du modèle. Un pipeline de prétraitement a été appliqué sur le
+s textes : mise en minuscule, suppression des liens, caractères spéciaux, emojis, et mots vides. Le modèle utilisé est BertForSequenceClassification de HuggingFace,
+ entraîné pour effectuer une classification binaire. Lors de l’inférence, si le modèle prédit une étiquette 1 avec une confiance supérieure à un seuil de 0.6, 
+la question est transmise au chatbot pour une réponse personnalisée ; sinon, une réponse générique est renvoyée : « Je suis votre assistant IA, ici pour vous aider
+ avec tout ce qui concerne les soins de bébé. » Ce système permet ainsi de filtrer intelligemment les questions, en identifiant uniquement celles en rapport avec les
+ soins aux bébés, et d’optimiser le fonctionnement du chatbot spécialisé.
+
+Développement d’un Chatbot pour les Soins aux Bébés à l’Aide de ChatGLM-6B
+
+ans le cadre de ce projet, nous avons entrepris de développer un chatbot intelligent spécialisé dans le domaine des soins aux bébés, destiné à accompagner les mères en leur fournissant des réponses précises et adaptées à leurs préoccupations. Pour cela, nous avons utilisé le jeu de données MATINF (Maternal and Infant Dataset), un corpus riche et structuré en chinois, contenant plus d’un million de paires question-réponse annotées manuellement dans le domaine de la maternité et de la puériculture. Étant donné que ce dataset est en langue chinoise, il était essentiel de choisir un modèle de langage capable de comprendre et générer du texte en chinois. C’est pourquoi nous avons opté pour le modèle ChatGLM-6B, développé par THUDM, qui est un LLM (Large Language Model) open-source optimisé pour la compréhension et la génération de texte en chinois et en anglais.
+
+À l’état brut, ChatGLM-6B n’est pas spécifiquement entraîné pour répondre à des questions sur les soins des bébés. Lors de nos premiers tests, ses réponses étaient génériques, imprécises, voire parfois non pertinentes. Pour pallier cette limitation, nous avons eu recours à une technique d’adaptation fine du modèle appelée P-Tuning v2. Contrairement à un fine-tuning complet (très coûteux en ressources), P-Tuning permet d’ajouter des préfixes d’entraînement (prompts virtuels) dans le réseau neuronal afin de guider le modèle vers un domaine spécifique sans modifier ses poids internes.
+
+Nous avons préparé notre jeu de données au format JSON, où chaque entrée contient un champ content (résultat de la concaténation de question et description) ainsi qu’un champ answer (la réponse attendue). Cette structure a permis d’optimiser l’apprentissage dans un cadre de dialogue question-réponse. L’entraînement a été lancé en utilisant un modèle quantifié en 4 bits pour réduire l’empreinte mémoire et accélérer les calculs. Les hyperparamètres choisis incluaient une longueur de préfixe (pre_seq_len) de 128, un taux d’apprentissage de 2e-2, et un nombre total de 100 étapes d’entraînement. Le processus s’est déroulé à l’aide du script main.py fourni dans le référentiel officiel de ChatGLM avec P-Tuning v2.
+
+À l’issue de l’entraînement, nous avons pu constater une amélioration nette des performances du modèle : il a commencé à comprendre les questions complexes, à donner des réponses plus précises et contextualisées, et à simuler une expertise réaliste dans le domaine des soins maternels et infantiles. Ainsi, le modèle peut désormais répondre à des interrogations comme « Que signifie la présence de taches rouges foncées sur le visage du bébé après la naissance ? » avec des réponses appropriées, ce qui n’était pas le cas avant l’entraînement.
+
+En résumé, le choix de ChatGLM-6B combiné à la méthode P-Tuning v2 s’est avéré être une solution efficace, économique et adaptée à notre objectif : construire un assistant conversationnel fiable et spécialisé dans les soins aux bébés, capable de comprendre le chinois et de fournir un soutien pertinent aux utilisateurs.
